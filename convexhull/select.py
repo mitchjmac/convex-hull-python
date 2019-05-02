@@ -1,15 +1,15 @@
 def leftmost(points):
-    p = min(points, key = lambda point: point[0])
-    return p
+    m = min(points, key = lambda point: point[0])[0]
+    return [p for p in points if p[0] == m]
 
 def rightmost(points):
-    p = max(points, key = lambda point: point[0])
-    return p
+    m = max(points, key = lambda point: point[0])[0]
+    return [p for p in points if p[0] == m]
 
 def bottommost(points):
-    p = min(points, key = lambda point: point[1])
-    return p
+    m = min(points, key = lambda point: point[1])[1]
+    return [p for p in points if p[1] == m]
 
 def topmost(points):
-    p = max(points, key = lambda point: point[1])
-    return p
+    m = max(points, key = lambda point: point[1])[1]
+    return [p for p in points if p[1] == m]

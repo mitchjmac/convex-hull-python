@@ -1,4 +1,5 @@
 from ..select import leftmost
+from ..select import bottommost
 from ..geometry import turn
 from ..geometry import distance
 
@@ -7,8 +8,10 @@ def jarvis(points):
     candidate = None  #candiate point to add to CH
     i = 0  #index of last point in partial solution (ch)
 
-    on_hull = leftmost(points)  #last point added to the CH
-                                # starting with known pt (leftmost)
+    lm = leftmost(points)  #last point added to the CH
+                            # starting with known pt (leftmost)
+    on_hull = bottommost(lm)[0]
+
     while True:
         ch.append(on_hull) #add candidate found last round to CH
         candidate = points[0]
@@ -16,7 +19,7 @@ def jarvis(points):
             if point == ch[i]:
                 continue
             t = turn(ch[i], point, candidate)
-            if (t < 1 or
+            if (t < 0 or
                     (t == 0 and
                         distance(ch[i], point) > distance(ch[i], candidate))):
                 candidate = point

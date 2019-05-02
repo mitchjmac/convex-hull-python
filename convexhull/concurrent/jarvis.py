@@ -5,7 +5,7 @@ from ..select import topmost
 from ..geometry import turn
 from ..geometry import distance
 import concurrent.futures
-from collections import OrderedDict
+# from collections import OrderedDict
 
 def _task(points, start, known):
     ch = []  #list of convex hull points
@@ -21,7 +21,7 @@ def _task(points, start, known):
             if point == ch[i]:
                 continue
             t = turn(ch[i], point, candidate)
-            if (t < 1 or
+            if (t < 0 or
                     (t == 0 and
                         distance(ch[i], point) > distance(ch[i], candidate))):
                 candidate = point
@@ -35,12 +35,14 @@ def _task(points, start, known):
         break
     return ch
 
-
 def jarvis(points, num_p=4):
-    collect = {}
-    ch = []
     funcs = [leftmost, bottommost, rightmost, topmost]
-    known = list(dict.fromkeys([f(points) for f in funcs]))
+    tie_break = [bottommost, rightmost, topmost, leftmost]
+    min_sets = [f(points) for f in funcs]
+    k = [f(m)[0] for f, m in list(zip(tie_break, min_sets))]
+    collect = dict.fromkeys(k, [])
+    known = list(collect)
+    ch = []
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_p) as executor:
         hull_part = {executor.submit(_task, points, k, known): k for k in known}
         for k in known:
