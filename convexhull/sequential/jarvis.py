@@ -18,7 +18,7 @@ def jarvis(points):
         for point in points:
             if point == ch[i]:
                 continue
-            t = turn(ch[i], point, candidate)
+            t = turn(ch[i], candidate, point)
             if (t < 0 or
                     (t == 0 and
                         distance(ch[i], point) > distance(ch[i], candidate))):
