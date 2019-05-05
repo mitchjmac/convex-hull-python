@@ -8,22 +8,22 @@ import concurrent.futures
 # from collections import OrderedDict
 
 def _task(points, start, known):
-    ch = []  #list of convex hull points
+    hull = []  #list of convex hull points
     candidate = None  # candiate point to add to CH
     i = 0  #index of last point in partial solution (ch)
 
     on_hull = start #last point added to the CH
                     # starting with known pt (leftmost)
     while True:
-        ch.append(on_hull) #add candidate found last round to CH
+        hull.append(on_hull) #add candidate found last round to CH
         candidate = points[0]
         for point in points:
-            if point == ch[i]:
+            if point == hull[i]:
                 continue
-            t = turn(ch[i], candidate, point)
+            t = turn(hull[i], candidate, point)
             if (t < 0 or
                     (t == 0 and
-                        distance(ch[i], point) > distance(ch[i], candidate))):
+                        distance(hull[i], point) > distance(hull[i], candidate))):
                 candidate = point
         i += 1
         on_hull = candidate
@@ -33,16 +33,16 @@ def _task(points, start, known):
         else:
             continue
         break
-    return ch
+    return hull
 
-def jarvis(points, num_p=4):
+def ch(points, num_p=4):
     funcs = [leftmost, bottommost, rightmost, topmost]
     tie_break = [bottommost, rightmost, topmost, leftmost]
     min_sets = [f(points) for f in funcs]
     k = [f(m)[0] for f, m in list(zip(tie_break, min_sets))]
     collect = dict.fromkeys(k, [])
     known = list(collect)
-    ch = []
+    hull = []
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_p) as executor:
         hull_part = {executor.submit(_task, points, k, known): k for k in known}
         for k in known:
@@ -51,5 +51,5 @@ def jarvis(points, num_p=4):
             data = future.result()
             collect[data[0]] = data
     for v in collect.values():
-        ch.extend(v)
-    return ch
+        hull.extend(v)
+    return hull
