@@ -119,33 +119,75 @@ def _divide_conquer(points):
     return _merge(left, right)
 
 
-def _subproblem_split(points, pid, num_p, offset=0):
+def _task_split(points, pid, num_p, offset=0):
     if num_p > 1:
         if pid-offset < num_p/2:
             left = points[0:len(points)//2]
-            print('hi from: ' + str(pid) + ' left ' + str(num_p/2+offset))
-            return _subproblem_split(left, pid, num_p/2, offset)
+            return _task_split(left, pid, num_p/2, offset)
         else:
             right = points[len(points)//2:]
-            print('hi from: ' + str(pid) + ' right ' + str(num_p/2+offset))
-            return _subproblem_split(right, pid, num_p/2, offset+(num_p/2))
+            return _task_split(right, pid, num_p/2, offset+(num_p/2))
     else:
         return (pid, _divide_conquer(points))
 
 
-def _subproblem_merge():
-    print("ok")
+def _task_merge(left, right, pid):
+    return (pid, _merge(left, right))
 
 
 def ch(points, max_p=4):
+    if len(points) <= 1:
+        return points
+    # Prep args
     points = sorted(points)
     num_p = 1 << (max_p.bit_length() - 1) # nearest power of 2 num processes
                                           #   leq max_p
-    # if not enough points for num_p, shrink num_P
+    # Must run with at least num_p number of points
+    while num_p > len(points):
+        num_p //= 2
+
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_p) as executor:
-        mini_hulls = {executor.submit(_subproblem_split, points, x, num_p):
+        # Initial division of work between num_p processes
+        # Will yield num_p sets of partially merged convex hulls
+        mini_hulls = {executor.submit(_task_split, points, x, num_p):
                       x for x in range(num_p)}
-        collect = dict.fromkeys(range(num_p), [])
+        collect = dict.fromkeys(range(num_p), []) #dict to order subproblems
         for future in concurrent.futures.as_completed(mini_hulls):
             data = future.result()
-            collect[data[0]] = data[1]
+            collect[data[0]] = data[1] #preserve order of convex hulls
+
+        # Second division of work to merge the num_p partially merged hulls
+        # Helpful to think of recursive tree:
+        #   Initially, above, we had num_p processes, those results are merged
+        #   by num_p/2 processes, and so on...
+        # No easy way to chain futures through recursive calls, so simulating
+        # the recursive tree
+        merge_procs = [None] * (num_p - 1) #leaves-1 = num internal nodes
+        to_merge = [None] * (num_p * 2 - 1) #store results after each merge
+        # Get values from first division of work
+        for k, v in collect.items():
+            to_merge[k+num_p-1] = v
+            # to_merge[v[0]] = v[1]
+        # Spawn inital num_p/2 processes out of total num_p-1
+        for x in range(num_p//2-1, num_p-1):
+            merge_procs[x] = executor.submit(_task_merge, to_merge[2*x+1],
+                                             to_merge[2*x+2], x)
+        # Spawn the remaining processes
+        while not to_merge[0]: #to_merge[0] is final result, so wait for it
+            # Check for results from preceeding round of merges
+            for p in merge_procs:
+                #if children on tree are done executing
+                if p and p.done() and not to_merge[p.result()[0]]:
+                    to_merge[p.result()[0]] = p.result()[1]
+            # Check if have both results from prior merge to start new merge
+            for x in range(0,len(merge_procs)//2):
+                if not merge_procs[x]: #if haven't already started process
+                    if to_merge[2*x+1] and to_merge[2*x+2]:
+                        merge_procs[x] = executor.submit(_task_merge,
+                                                         to_merge[2*x+1],
+                                                         to_merge[2*x+2], x)
+    return to_merge[0]
+
+
+
+
