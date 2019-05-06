@@ -21,6 +21,12 @@ def _graham(points):
         hull.append(p)
     return hull
 
+
+def _task_run(points, pid):
+    return (pid, _graham(points))
+
+
+
 def parallel(points):
     """Finds the convex hull of a set of points
 
@@ -37,23 +43,20 @@ def parallel(points):
     """
     if len(points) <= 1:
         return points
-    lower = []
-    upper = []
     hull  = []
     points = sorted(points)
 
     # Spawn one process to find the upper and one to find the lower
     with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-        l = {executor.submit(_graham, points)}
-        u = {executor.submit(_graham, reversed(points))}
-        for future in concurrent.futures.as_completed(l):
-            lower = future.result()
-        for future in concurrent.futures.as_completed(u):
-            upper = future.result()
-
-    # Emrge the upper and lower hulls
-    hull.extend(lower[:-1])
-    hull.extend(upper[:-1])
+        half_hulls = {executor.submit(_task_run, x[0], x[1]):
+                      x for x in zip([points,reversed(points)], range(2))}
+        collect = dict.fromkeys(range(2), []) #dict to order subproblems
+        for future in concurrent.futures.as_completed(half_hulls):
+            data = future.result()
+            collect[data[0]] = data[1]
+        # Merge the upper and lower hulls
+        for v in collect.values():
+            hull.extend(v[:-1])
 
     return hull
 
