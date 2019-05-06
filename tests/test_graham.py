@@ -2,6 +2,7 @@ from .context import convexhull
 from convexhull import graham
 from convexhull.pointset import PointSet
 import os
+import numpy as np
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
