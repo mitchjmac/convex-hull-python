@@ -22,7 +22,7 @@ def low_points():
         print(correct.compare(par_points))
 
 # Tests for correct answers / errors in cases with large numbers of points
-def high_points():
+def high_points(num_p):
     in_points  = PointSet()
     correct    = PointSet()
 
@@ -32,7 +32,7 @@ def high_points():
         in_points.load(str(inpath))
         correct.load(str(outpath))
         seq_points = PointSet(dc.sequential(in_points.points))
-        par_points = PointSet(dc.parallel(in_points.points))
+        par_points = PointSet(dc.parallel(in_points.points, num_p))
 
         print(correct.compare(seq_points))
         print(correct.compare(par_points))
