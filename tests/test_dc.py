@@ -3,6 +3,7 @@ from convexhull import dc
 from convexhull.pointset import PointSet
 import os
 import numpy as np
+from timeit import default_timer as timer
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,3 +37,21 @@ def high_points(num_p):
 
         print(correct.compare(seq_points))
         print(correct.compare(par_points))
+
+
+def test_time(num_p):
+    in_points  = PointSet()
+    for i in np.logspace(1,6,num=6-1+1,base=10,dtype='int'):
+        inpath  = os.path.join(THIS_DIR, 'data/input/' + str(i) + 'p')
+        in_points.load(str(inpath))
+        start = timer()
+        seq_points = PointSet(dc.sequential(in_points.points))
+        end = timer()
+        print(end - start)
+        start = timer()
+        end = timer()
+        print(end - start)
+        par_points = PointSet(dc.parallel(in_points.points, num_p))
+        start = timer()
+        end = timer()
+        print(end - start)
