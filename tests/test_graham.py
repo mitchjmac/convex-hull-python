@@ -3,6 +3,7 @@ from convexhull import graham
 from convexhull.pointset import PointSet
 import os
 import numpy as np
+from timeit import default_timer as timer
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
