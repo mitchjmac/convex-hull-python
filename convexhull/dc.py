@@ -34,9 +34,9 @@ def _merge(l, r):
         return ret
 
     # Maintain order of sub hulls: start leftmost element -> counterclockwise
-    # while len(l) > 1 and l[0][0] > l[1][0]:
-    #     rotate = l.pop(0)
-    #     l.append(rotate)
+    while len(l) > 1 and l[0][0] > l[1][0]:
+        rotate = l.pop(0)
+        l.append(rotate)
 
     # Initialize variables used to find upper and lower tangents
     p = rightmost(l)         # set of points with rightmost x in left hull
