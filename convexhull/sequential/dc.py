@@ -8,6 +8,20 @@ import math
 import concurrent.futures
 
 def _merge(l, r):
+    """Merges two convexhulls into one
+
+    Merges two convex hulls into one larger hull with the two properties:
+        The first point of the list representation is the leftmost point.
+        Subsequent points are ordered clockwise.
+    Merges are done by finding an upper and lower tangent between the 2 hulls.
+
+    Args:
+        l (list): the left hull to merge
+        r (list): the right hull to merge
+
+    Returns:
+        list: A list representing the merged convex hulls
+    """
     ret = []
     # Base case to merge 2 points, lowest y-coord first
     if len(l) == 1 and len(r) == 1:
@@ -112,6 +126,14 @@ def _merge(l, r):
 
 
 def _divide_conquer(points):
+    """Recursively divides and then merges poitns to find the convex hull
+
+    Args:
+        points (list): The input set of points which must be sorted by x-coord
+
+    Returns:
+        list: The convex hull of the input set of points
+    """
     if len(points) == 1:
         return points
     left = _divide_conquer(points[:len(points)//2])
@@ -120,6 +142,18 @@ def _divide_conquer(points):
 
 
 def ch(points):
+    """Finds the convex hull of a set of points
+
+    Finds the convex hull of a set of points using divide and conquer approach.
+    The set of points only includes the extreme points and points are ordered
+    from the leftmost point (lowest x) then counterclockwise.
+
+    Args:
+        points (list): list of points to find convex hull from
+
+    Returns:
+        list: The convex hull of the input set of points
+    """
     if len(points) <= 1:
         return points
     points = sorted(points)

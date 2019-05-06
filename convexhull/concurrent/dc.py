@@ -8,6 +8,20 @@ import math
 import concurrent.futures
 
 def _merge(l, r):
+    """Merges two convexhulls into one
+
+    Merges two convex hulls into one larger hull with the two properties:
+        The first point of the list representation is the leftmost point.
+        Subsequent points are ordered clockwise.
+    Merges are done by finding an upper and lower tangent between the 2 hulls.
+
+    Args:
+        l (list): the left hull to merge
+        r (list): the right hull to merge
+
+    Returns:
+        list: A list representing the merged convex hulls
+    """
     ret = []
     # Base case to merge 2 points, lowest y-coord first
     if len(l) == 1 and len(r) == 1:
@@ -112,6 +126,14 @@ def _merge(l, r):
 
 
 def _divide_conquer(points):
+    """Recursively divides and then merges poitns to find the convex hull
+
+    Args:
+        points (list): The input set of points which must be sorted by x-coord
+
+    Returns:
+        list: The convex hull of the input set of points
+    """
     if len(points) == 1:
         return points
     left = _divide_conquer(points[:len(points)//2])
@@ -120,6 +142,28 @@ def _divide_conquer(points):
 
 
 def _task_split(points, pid, num_p, offset=0):
+    """Finds the convex hull of a subset of the input points
+
+    This function is called on a subprocess. Recursive funtion call
+    on the input data set to a depth of log_2(n) where n is the number of
+    spawned subprocesses. However, each subprocess only solves 1 subproblem
+    based on its pid. Think of it as a Merkel tree with each process' pid
+    being a binary hash from MSB to LSB (0 -> left half; 1 -> right half).
+    Each of n-subrocesses is assigned 1/n of the input
+    points and finds the convex hull of those points. When each subprocess
+    completes its subproblem, there will be n partially merged convex hulls.
+
+    Args:
+        points  (list): input points or the half set of points from previous
+        pid (int): The process' id#, determines which subproblem it solves
+        num_p (int): Number of processes sharing the current subproblem
+        offset (int, optional): Internal used for allocating subprob correctly
+
+    Returns:
+        (int, list): PID, Convex hull of a subet of input points, of size
+        roughly 1/num_p
+    """
+    # Split subproblem into 2 halves between num_p/2 procs
     if num_p > 1:
         if pid-offset < num_p/2:
             left = points[0:len(points)//2]
@@ -127,15 +171,44 @@ def _task_split(points, pid, num_p, offset=0):
         else:
             right = points[len(points)//2:]
             return _task_split(right, pid, num_p/2, offset+(num_p/2))
+    # Only process assigned to this subproblem, no more splitting
     else:
         return (pid, _divide_conquer(points))
 
 
 def _task_merge(left, right, pid):
+    """Merges two convex hulls into one
+
+    This function is called on a subprocess. The two hulls passed in are from
+    an earlier call to _task_split.
+
+    Args:
+        left (list): The left hull to merge
+        right (list): The right hull to merge
+        pid (int): The process #, only used to sort return values
+
+    Returns:
+        (int, list): PID, merged convex hull
+    """
     return (pid, _merge(left, right))
 
 
 def ch(points, max_p=4):
+    """Finds the convex hull of a set of points
+
+    Finds the convex hull of a set of points using divide and conquer approach.
+    The set of points only includes the extreme points and points are ordered
+    from the leftmost point (lowest x) then counterclockwise. Will use multiple
+    processes to split the work of calculating the hull up to a maximum of
+    max_p processes.
+
+    Args:
+        points (list): list of points to find convex hull from
+        max_p (int, optional): The maximum number of subprocesses to spawn
+
+    Returns:
+        list: The convex hull of the input set of points
+    """
     if len(points) <= 1:
         return points
     # Prep args
