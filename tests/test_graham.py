@@ -44,14 +44,13 @@ def test_time():
     for i in np.logspace(1,6,num=6-1+1,base=10,dtype='int'):
         inpath  = os.path.join(THIS_DIR, 'data/input/' + str(i) + 'p')
         in_points.load(str(inpath))
+        # Sequential
         start = timer()
         seq_points = PointSet(graham.sequential(in_points.points))
         end = timer()
         print(end - start)
+        # Concurrent
         start = timer()
-        end = timer()
-        print(end - start)
         par_points = PointSet(graham.parallel(in_points.points))
-        start = timer()
         end = timer()
         print(end - start)
