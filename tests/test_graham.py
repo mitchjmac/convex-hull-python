@@ -28,7 +28,7 @@ def high_points():
     in_points  = PointSet()
     correct    = PointSet()
 
-    for i in np.logspace(1,6,num=6-1+1,base=10,dtype='int'):
+    for i in np.logspace(1,7,num=7-1+1,base=10,dtype='int'):
         inpath  = os.path.join(THIS_DIR, 'data/input/' + str(i) + 'p')
         outpath = os.path.join(THIS_DIR, 'data/output/' + str(i) + 'p')
         in_points.load(str(inpath))
@@ -42,7 +42,7 @@ def high_points():
 
 def test_time():
     in_points  = PointSet()
-    for i in np.logspace(1,6,num=6-1+1,base=10,dtype='int'):
+    for i in np.logspace(1,7,num=7-1+1,base=10,dtype='int'):
         inpath  = os.path.join(THIS_DIR, 'data/input/' + str(i) + 'p')
         in_points.load(str(inpath))
         # Sequential
@@ -55,16 +55,16 @@ def test_time():
         graham.parallel(in_points.points)
         end = timer()
         print(end - start)
-    # Biggest set
-    inpath  = os.path.join(THIS_DIR, 'data/input/5000000p')
-    in_points.load(str(inpath))
-    # Sequential
-    start = timer()
-    graham.sequential(in_points.points)
-    end = timer()
-    print(end - start)
-    # Concurrent
-    start = timer()
-    graham.parallel(in_points.points)
-    end = timer()
-    print(end - start)
+    # # Biggest set
+    # inpath  = os.path.join(THIS_DIR, 'data/input/5000000p')
+    # in_points.load(str(inpath))
+    # # Sequential
+    # start = timer()
+    # graham.sequential(in_points.points)
+    # end = timer()
+    # print(end - start)
+    # # Concurrent
+    # start = timer()
+    # graham.parallel(in_points.points)
+    # end = timer()
+    # print(end - start)
