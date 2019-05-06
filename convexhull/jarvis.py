@@ -66,6 +66,8 @@ def parallel(points, num_p=4):
     Returns:
         list: The convex hull of the set of points
     """
+    if len(points) <= 1:
+        return points
     funcs = [leftmost, bottommost, rightmost, topmost]
     tie_break = [bottommost, rightmost, topmost, leftmost]
     # Find set of points farthest to the bottom, right, top, left
@@ -100,6 +102,8 @@ def sequential(points):
     Returns:
         list: The convex hull of the set of points
     """
+    if len(points) <= 1:
+        return points
     lm = leftmost(points)  #last point added to the CH
                            #  starting with known pt (leftmost)
     on_hull = bottommost(lm)[0]
