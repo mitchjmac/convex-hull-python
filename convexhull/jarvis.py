@@ -1,12 +1,12 @@
-from ..select import leftmost
-from ..select import rightmost
-from ..select import bottommost
-from ..select import topmost
-from ..geometry import turn
-from ..geometry import distance
+from .select import leftmost
+from .select import rightmost
+from .select import bottommost
+from .select import topmost
+from .geometry import turn
+from .geometry import distance
 import concurrent.futures
 
-def _task(points, start, known):
+def _jarvis(points, start, known):
     """Runs Jarvis March to find a portion of the convex hull of a set of points
 
     This function is called from a subprocess. Finds the portion of a convex
@@ -50,7 +50,7 @@ def _task(points, start, known):
         break
     return hull
 
-def ch(points, num_p=4):
+def parallel(points, num_p=4):
     """Finds the convex hull of a set of points.
 
     Find the convex hull of a set of points. Uses 2-4 processes to find portions
@@ -77,7 +77,7 @@ def ch(points, num_p=4):
     hull = []
     # For each point in the known points on the hull spawn processes
     with concurrent.futures.ProcessPoolExecutor(max_workers=num_p) as executor:
-        hull_part = {executor.submit(_task, points, k, known): k for k in known}
+        hull_part = {executor.submit(_jarvis, points, k, known): k for k in known}
         for k in known:
             collect[k] = []
         for future in concurrent.futures.as_completed(hull_part):
@@ -86,3 +86,22 @@ def ch(points, num_p=4):
     for v in collect.values():
         hull.extend(v)
     return hull
+
+def sequential(points):
+    """Finds the convex hull of a set of points.
+
+    Find the convex hull of a set of points using Jarvis March. The set of
+    points only includes the extreme points and points are ordered from the
+    leftmost point (lowest x) then counterclockwise.
+
+    Args:
+        points (list): The input set of poitns to find the convex hull of
+
+    Returns:
+        list: The convex hull of the set of points
+    """
+    lm = leftmost(points)  #last point added to the CH
+                           #  starting with known pt (leftmost)
+    on_hull = bottommost(lm)[0]
+
+    return _jarvis(points, on_hull, [on_hull])

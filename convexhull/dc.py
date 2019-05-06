@@ -1,9 +1,9 @@
-from ..select import leftmost
-from ..select import rightmost
-from ..select import bottommost
-from ..select import topmost
-from ..geometry import turn
-from ..geometry import distance
+from .select import leftmost
+from .select import rightmost
+from .select import bottommost
+from .select import topmost
+from .geometry import turn
+from .geometry import distance
 import math
 import concurrent.futures
 
@@ -193,7 +193,7 @@ def _task_merge(left, right, pid):
     return (pid, _merge(left, right))
 
 
-def ch(points, max_p=4):
+def parallel(points, max_p=4):
     """Finds the convex hull of a set of points
 
     Finds the convex hull of a set of points using divide and conquer approach.
@@ -262,5 +262,20 @@ def ch(points, max_p=4):
     return to_merge[0]
 
 
+def sequential(points):
+    """Finds the convex hull of a set of points
 
+    Finds the convex hull of a set of points using divide and conquer approach.
+    The set of points only includes the extreme points and points are ordered
+    from the leftmost point (lowest x) then counterclockwise.
 
+    Args:
+        points (list): list of points to find convex hull from
+
+    Returns:
+        list: The convex hull of the input set of points
+    """
+    if len(points) <= 1:
+        return points
+    points = sorted(points)
+    return _divide_conquer(points)
