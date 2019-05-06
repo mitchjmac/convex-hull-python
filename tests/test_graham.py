@@ -47,11 +47,24 @@ def test_time():
         in_points.load(str(inpath))
         # Sequential
         start = timer()
-        seq_points = PointSet(graham.sequential(in_points.points))
+        graham.sequential(in_points.points)
         end = timer()
         print(end - start)
         # Concurrent
         start = timer()
-        par_points = PointSet(graham.parallel(in_points.points))
+        graham.parallel(in_points.points)
         end = timer()
         print(end - start)
+    # Biggest set
+    inpath  = os.path.join(THIS_DIR, 'data/input/5000000p')
+    in_points.load(str(inpath))
+    # Sequential
+    start = timer()
+    graham.sequential(in_points.points)
+    end = timer()
+    print(end - start)
+    # Concurrent
+    start = timer()
+    graham.parallel(in_points.points)
+    end = timer()
+    print(end - start)

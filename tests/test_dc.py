@@ -46,11 +46,24 @@ def test_time(num_p):
         in_points.load(str(inpath))
         # Sequential
         start = timer()
-        seq_points = PointSet(dc.sequential(in_points.points))
+        dc.sequential(in_points.points)
         end = timer()
         print(end - start)
         # Concurrent
         start = timer()
-        par_points = PointSet(dc.parallel(in_points.points, num_p))
+        dc.parallel(in_points.points, num_p)
         end = timer()
         print(end - start)
+    # Biggest set
+    inpath  = os.path.join(THIS_DIR, 'data/input/5000000p')
+    in_points.load(str(inpath))
+    # Sequential
+    start = timer()
+    dc.sequential(in_points.points)
+    end = timer()
+    print(end - start)
+    # Concurrent
+    start = timer()
+    dc.parallel(in_points.points, num_p)
+    end = timer()
+    print(end - start)

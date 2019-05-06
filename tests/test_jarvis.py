@@ -47,11 +47,24 @@ def test_time():
         in_points.load(str(inpath))
         # Sequential
         start = timer()
-        seq_points = PointSet(jarvis.sequential(in_points.points))
+        jarvis.sequential(in_points.points)
         end = timer()
         print(end - start)
         # Concurrent
         start = timer()
-        par_points = PointSet(jarvis.parallel(in_points.points))
+        jarvis.parallel(in_points.points)
         end = timer()
         print(end - start)
+    # Biggest set
+    inpath  = os.path.join(THIS_DIR, 'data/input/5000000p')
+    in_points.load(str(inpath))
+    # Sequential
+    start = timer()
+    jarvis.sequential(in_points.points)
+    end = timer()
+    print(end - start)
+    # Concurrent
+    start = timer()
+    jarvis.parallel(in_points.points)
+    end = timer()
+    print(end - start)
