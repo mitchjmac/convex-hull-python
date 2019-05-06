@@ -21,6 +21,7 @@ def low_points():
         print(correct.compare(seq_points))
         print(correct.compare(par_points))
 
+
 # Tests for correct answers / errors in cases with large numbers of points
 def high_points():
     in_points  = PointSet()
